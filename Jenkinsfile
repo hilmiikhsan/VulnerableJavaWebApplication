@@ -31,7 +31,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'docker build --platform linux/arm64 -t vulnerable-java-application:0.1 .'
+                sh 'docker build -t vulnerable-java-application:0.1 .'
             }
         }
         stage('Run Docker Image') {
