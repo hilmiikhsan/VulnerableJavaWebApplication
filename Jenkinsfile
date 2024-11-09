@@ -13,16 +13,14 @@ pipeline {
             agent {
                 docker {
                     image 'owasp/dependency-check:latest'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock --entrypoint='
                 }
             }
             steps {
-                dir("${WORKSPACE}") {
-                    sh '/usr/share/dependency-check/bin/dependency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
-                    archiveArtifacts artifacts: 'dependency-check-report.html'
-                    archiveArtifacts artifacts: 'dependency-check-report.json'
-                    archiveArtifacts artifacts: 'dependency-check-report.xml'
-                }
+                sh '/usr/share/dependency-check/bin/dependency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
+                archiveArtifacts artifacts: 'dependency-check-report.html'
+                archiveArtifacts artifacts: 'dependency-check-report.json'
+                archiveArtifacts artifacts: 'dependency-check-report.xml'
             }
         }
         stage('Build Docker Image') {
@@ -41,7 +39,7 @@ pipeline {
                 label 'built-in'
             }
             steps {
-                sh 'docker rm --force vulnerable-java-application || true'
+                sh 'docker rm --force vulnerable-java-application'
                 sh 'docker run --name vulnerable-java-application -p 9000:9000 -d vulnerable-java-application:0.1'
             }
         }
