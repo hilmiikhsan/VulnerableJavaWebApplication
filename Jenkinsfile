@@ -24,7 +24,7 @@ pipeline {
             agent {
                 docker {
                     image 'owasp/dependency-check:latest'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock --entrypoint='
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
