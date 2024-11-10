@@ -47,7 +47,7 @@ pipeline {
         stage('DAST') {
             agent {
                 docker {
-                    image 'owasp/zap2docker-stable:latest'
+                    image 'zaproxy/zap-stable'
                     args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint= -v .:/zap/wrk/:rw'
                 }
             }
