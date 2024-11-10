@@ -9,6 +9,19 @@ pipeline {
                 sh 'mvn compile'
             }
         }
+        stage('Secret Scanning') {
+            agent {
+                docker {
+                    image 'trufflesecurity/trufflehog:latest'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint='
+                }
+            }
+            steps {
+                sh 'trufflehog --no-update filesystem . --json > trufflehogscan.json'
+                sh 'cat trufflehogscan.json'
+                archiveArtifacts artifacts: 'trufflehogscan.json'
+            }
+        }
         stage('SCA') {
             agent {
                 docker {
