@@ -44,5 +44,22 @@ pipeline {
                 sh 'docker run --name vulnerable-java-application -p 9000:9000 -d vulnerable-java-application:0.1'
             }
         }
+        stage('DAST') {
+            agent {
+                docker {
+                    image 'owasp/zap2docker-stable:latest'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint= -v .:/zap/wrk/:rw'
+                }
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'zap-full-scan.py -t https://172.19.0.3:9000 -r zap-full-report.html -x zap-full-report.xml'
+                }
+                sh 'cp /zap/wrk/zap-full-report.html ./zap-full-report.html'
+                sh 'cp /zap/wrk/zap-full-report.xml ./zap-full-report.xml'
+                archiveArtifacts artifacts: 'zap-full-report.html'
+                archiveArtifacts artifacts: 'zap-full-report.xml'
+            }
+        }
     }
 }
