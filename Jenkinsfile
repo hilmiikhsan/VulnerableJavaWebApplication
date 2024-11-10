@@ -1,12 +1,14 @@
 pipeline {
     agent none
     stages {
-        stage('Maven Compile') {
+        stage('Maven Compile and SAST Spotbugs') {
             agent {
                 label 'maven'
             }
             steps {
-                sh 'mvn compile'
+                sh 'mvn compile spotbugs:spotbugs'
+                archiveArtifacts artifacts: 'target/spotbugsHtml.html'
+                archiveArtifacts artifacts: 'target/spotbugsXml.xml'
             }
         }
         stage('Secret Scanning') {
@@ -20,20 +22,6 @@ pipeline {
                 sh 'trufflehog --no-update filesystem . --json > trufflehogscan.json'
                 sh 'cat trufflehogscan.json'
                 archiveArtifacts artifacts: 'trufflehogscan.json'
-            }
-        }
-        stage('SCA') {
-            agent {
-                docker {
-                    image 'owasp/dependency-check:latest'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint='
-                }
-            }
-            steps {
-                sh '/usr/share/dependency-check/bin/dependency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
-                archiveArtifacts artifacts: 'dependency-check-report.html'
-                archiveArtifacts artifacts: 'dependency-check-report.json'
-                archiveArtifacts artifacts: 'dependency-check-report.xml'
             }
         }
         stage('Build Docker Image') {
